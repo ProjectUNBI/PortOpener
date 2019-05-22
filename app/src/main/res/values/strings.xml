@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">PortOpener</string>
+    <string name="localhost_portvalue">Localhost port:</string>
+    <string name="port">Port</string>
+    <string name="test_local_port_ip">Test Localport</string>
+    <string name="open_portvalue">Open port</string>
+    <string name="test_open_port_ip">Test Openport</string>
+    <string name="open_now">Open Now</string>
+    <string name="close_now">Close now</string>
+</resources>
