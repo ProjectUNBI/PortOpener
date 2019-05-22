@@ -1,5 +1,7 @@
 package com.unbi.portopener;
 
+import android.util.Log;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -54,11 +56,12 @@ class ThreadProxy extends Thread {
             // connects a socket to the server
             try {
                 server = new Socket(SERVER_URL, SERVER_PORT);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 PrintWriter out = new PrintWriter(new OutputStreamWriter(
                         outToClient));
                 out.flush();
-                throw new RuntimeException(e);
+                Log.e("ThreadProxy",e.getMessage());
+//                throw new RuntimeException(e);
             }
             // a new thread to manage streams from server to client (DOWNLOAD)
             inFromServer = server.getInputStream();
