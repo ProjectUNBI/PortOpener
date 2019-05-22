@@ -17,8 +17,9 @@ class MyBroadCastReciever : BroadcastReceiver() {
         val actionId = intent?.action;
         when (actionId) {
             PORTVALUE_INTENT -> {
-                val string = intent.getStringExtra("extra")
-                Appinstance.instance.portvalue = Gson().fromJson(string, PortValue::class.java)
+                val sock = intent.getIntExtra("extrasock",-1)
+                val http = intent.getIntExtra("extrahttp",-1)
+                Appinstance.instance.portvalue = PortValue(sock,http,false)
             }
         }
 

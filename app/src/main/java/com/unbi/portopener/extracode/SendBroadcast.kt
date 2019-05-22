@@ -15,8 +15,11 @@ class SendBroadcast {
          return
         }
         val intent =  Intent(PORTVALUE_INTENT);
-        intent.putExtra("extra",Gson().toJson(PortValueExtra(sockport,httpport,false)))
+        intent.putExtra("extrasock",sockport)
+        intent.putExtra("extrahttp",httpport)
         context.sendBroadcast(intent);
+        sockport=-1
+        httpport=-1
     }
 
 }
