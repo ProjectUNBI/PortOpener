@@ -8,12 +8,13 @@ import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import android.support.v7.widget.CardView
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import android.widget.Toast.LENGTH_LONG
+import com.unbi.portopener.extracode.sample
 
 class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListener {
 
@@ -35,6 +36,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         if (v != null) {
             when (v.id) {
                 R.id.but_open_now -> {
+
                     saveeditvalues()
                     if (
                             UserInstance.instance.portPairs[0].openport == UserInstance.instance.portPairs[1].openport||
@@ -80,6 +82,11 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
                 R.id.but_test_open_port2 -> {
                     saveeditvalues()
                     test(UserInstance.instance.portPairs[1].openport)
+
+                }
+                R.id.but_setvalue_from_intent->{
+                    UserInstance.instance.portPairs[0].localhost=Appinstance.instance.portvalue.sockPort
+                    UserInstance.instance.portPairs[1].localhost=Appinstance.instance.portvalue.httpPortint
 
                 }
             }
@@ -130,6 +137,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
 
     lateinit var but_test_local1: Button
     lateinit var but_test_open1: Button
+    lateinit var but_set: Button
     lateinit var edit_local1: EditText
     lateinit var edit_open1: EditText
 
@@ -137,6 +145,8 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
     lateinit var but_test_open2: Button
     lateinit var edit_local2: EditText
     lateinit var edit_open2: EditText
+
+    lateinit var card_porxy_port:CardView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,6 +178,11 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         edit_local2 = findViewById(R.id.edit_local_host_port2)
         edit_open2 = findViewById(R.id.edit_open_port2)
 
+        card_porxy_port=findViewById(R.id.cardview_sock_http)
+        but_set=findViewById(R.id.but_setvalue_from_intent)
+        but_set.setOnClickListener(this)
+        updatecardiewProxy()
+
         for (int in 0 until UserInstance.instance.portPairs.size) {
             when (int) {
                 0 -> {
@@ -198,6 +213,15 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
 
         ToastHandler.instance.setmContext(this)
         refreshview()
+
+    }
+
+    private fun updatecardiewProxy() {
+        if(!Appinstance.instance.portvalue.isconsume){
+            card_porxy_port.visibility=View.VISIBLE
+        }else{
+            card_porxy_port.visibility=View.GONE
+        }
     }
 
     private fun refreshview() {
@@ -221,7 +245,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
     override fun onResume() {
         super.onResume()
         ToastHandler.instance.setmContext(this)
-
+        updatecardiewProxy()
     }
 
     override fun onPause() {

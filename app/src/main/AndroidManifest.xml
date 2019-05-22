@@ -18,6 +18,13 @@
             </intent-filter>
         </activity>
         <service android:name=".PortOpenerService"/>
+
+        <receiver android:name=".MyBroadCastReciever">
+            <intent-filter>
+                <action android:name="com.unbi.poropener.PORT"/>
+            </intent-filter>
+        </receiver>
     </application>
+
 
 </manifest>

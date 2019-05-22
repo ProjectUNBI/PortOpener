@@ -2,7 +2,6 @@ package com.unbi.portopener
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.os.Environment
 import com.google.gson.Gson
 import java.util.ArrayList
 
@@ -40,6 +39,8 @@ class Appinstance{
     var portOpenerAssync1=AssyncPortOpenner()
     var portOpenerAssync2=AssyncPortOpenner()
     var isConnected=false;
+
+    var portvalue:PortValue= PortValue(-1,-1,true)
 
 
 }

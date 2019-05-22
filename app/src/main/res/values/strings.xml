@@ -7,4 +7,9 @@
     <string name="test_open_port_ip">Test Openport</string>
     <string name="open_now">Open Now</string>
     <string name="close_now">Close now</string>
+    <string name="sockproxy_port">Sockproxy port:</string>
+    <string name="someport">12312</string>
+    <string name="httpproxy_port">Httpproxy Port:</string>
+    <string name="set_value">Set</string>
+    <string name="someporthttp">54236</string>
 </resources>
