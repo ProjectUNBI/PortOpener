@@ -23,23 +23,23 @@ class ThreadProxy extends Thread {
     public void closeStreams() {
         try {
             inFromClient.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         try {
             inFromServer.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         try {
             outToClient.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         try {
             outToServer.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -107,7 +107,7 @@ class ThreadProxy extends Thread {
             }
             outToClient.close();
             sClient.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
