@@ -12,4 +12,5 @@
     <string name="httpproxy_port">Httpproxy Port:</string>
     <string name="set_value">Set</string>
     <string name="someporthttp">54236</string>
+    <string name="no_prxy_sock_portvalue">No proxy socks port</string>
 </resources>

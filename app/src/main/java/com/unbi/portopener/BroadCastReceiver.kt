@@ -14,14 +14,14 @@ class MyBroadCastReciever : BroadcastReceiver() {
 //            Userdata.instance.readfromSpref(context)
 //        }
 
-        val actionId = intent?.action;
-        when (actionId) {
-            PORTVALUE_INTENT -> {
-                val sock = intent.getIntExtra("extrasock",-1)
-                val http = intent.getIntExtra("extrahttp",-1)
-                Appinstance.instance.portvalue = PortValue(sock,http,false)
-            }
-        }
+//        val actionId = intent?.action;
+//        when (actionId) {
+//            PORTVALUE_INTENT -> {
+//                val sock = intent.getIntExtra("extrasock",-1)
+//                val http = intent.getIntExtra("extrahttp",-1)
+//                Appinstance.instance.portvalue = PortValue(sock,http,false)
+//            }
+//        }
 
 
     }
@@ -31,5 +31,5 @@ class MyBroadCastReciever : BroadcastReceiver() {
 class PortValue(
     val sockPort: Int,
     val httpPortint: Int,
-    val isconsume: Boolean = true
+    var isconsume: Boolean = true
 )

@@ -1,5 +1,6 @@
 package com.unbi.portopener
 
+import android.app.Application
 import android.content.*
 import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
@@ -14,9 +15,11 @@ import android.widget.Toast
 import android.support.v4.content.LocalBroadcastManager
 import android.content.Intent
 import android.content.BroadcastReceiver
+import android.content.Intent.CATEGORY_DEFAULT
 import android.opengl.Visibility
 import android.view.View.GONE
 import android.widget.TextView
+import com.unbi.portopener.extracode.SendBroadcast
 
 
 class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListener {
@@ -44,8 +47,19 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
     lateinit var tvsockport: TextView
     lateinit var tvhttpport: TextView
 
+    lateinit var edit_noproxy_sockport:EditText
+    lateinit var but_noproxy_sockport_test:Button
+
     val reciever = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            val actionId = intent?.action;
+            when (actionId) {
+                PORTVALUE_INTENT -> {
+                    val sock = intent.getIntExtra("extrasock",-1)
+                    val http = intent.getIntExtra("extrahttp",-1)
+                    Appinstance.instance.portvalue = PortValue(sock,http,false)
+                }
+            }
             updatecardiewProxy()
         }
     }
@@ -61,6 +75,9 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
             UserInstance.instance.saveTosharePref(this)
         }
 
+        but_noproxy_sockport_test=findViewById(R.id.but_noproxy_sock_port)
+        but_noproxy_sockport_test.setOnClickListener(this)
+        edit_noproxy_sockport=findViewById(R.id.edit_noproxy_sock_port)
         but_start = findViewById(R.id.but_open_now)
         but_start.setOnClickListener(this)
         but_stop = findViewById(R.id.but_close_now)
@@ -112,6 +129,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
 
 
         }
+        edit_noproxy_sockport.setText(UserInstance.instance.noProxySock.toString())
 
         ToastHandler.instance.setmContext(this)
         refreshview()
@@ -152,6 +170,11 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
                             .show()
                         return
                     }
+                    if(!validport(UserInstance.instance.noProxySock)){
+                        Toast.makeText(this, "No proxy sock port is not valid", Toast.LENGTH_SHORT)
+                            .show()
+                        return
+                    }
 
                     mService?.StartService()
                     Appinstance.instance.isConnected = true
@@ -189,7 +212,18 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
                     UserInstance.instance.portPairs[1].localhost =
                         Appinstance.instance.portvalue.httpPortint
                     card_porxy_port.visibility=GONE
+                    Appinstance.instance.portvalue.isconsume=true
                     refreshview()
+                }
+                R.id.but_noproxy_sock_port->{
+                    saveeditvalues()
+                    test(UserInstance.instance.noProxySock)
+
+                    // the following commentted is for just testing code
+//                    val sendBroadcast=SendBroadcast()
+//                    sendBroadcast.httpport=1
+//                    sendBroadcast.sockport=22
+//                    sendBroadcast.send(applicationContext)
                 }
             }
         }
@@ -199,12 +233,20 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         return portPair.localhost > -1 && portPair.localhost < 65535 &&
                 portPair.openport > -1 && portPair.openport < 65535
     }
+    private fun validport(port: Int): Boolean {
+        return port> -1 && port < 65535
+    }
 
     private fun test(port: Int) {
         WebCheckAssync().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, port)
     }
 
     private fun saveeditvalues() {
+        try {
+            UserInstance.instance.noProxySock = edit_noproxy_sockport.text.toString().toInt()
+        } catch (e: Exception) {
+            Log.v("Error", "EmptyString")
+        }
         try {
             UserInstance.instance.portPairs[0].localhost = edit_local1.text.toString().toInt()
         } catch (e: Exception) {
@@ -252,6 +294,8 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
             but_start.isEnabled = true
             but_stop.isEnabled = false
         }
+        edit_noproxy_sockport.setText(UserInstance.instance.noProxySock.toString())
+
         if (UserInstance.instance.portPairs[0].localhost > -1) {
             edit_local1.setText(UserInstance.instance.portPairs[0].localhost.toString())
         }
@@ -259,7 +303,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
             edit_open1.setText(UserInstance.instance.portPairs[0].openport.toString())
         }
 
-        if (UserInstance.instance.portPairs[1].openport > -1) {
+        if (UserInstance.instance.portPairs[1].localhost > -1) {
             edit_local2.setText(UserInstance.instance.portPairs[1].localhost.toString())
         }
         if (UserInstance.instance.portPairs[1].openport > -1) {
@@ -271,6 +315,9 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
 
     override fun onStart() {
         super.onStart()
+        val intentFilter=IntentFilter("com.unbi.poropener.PORT")
+        intentFilter.addCategory(CATEGORY_DEFAULT)
+        registerReceiver(reciever,intentFilter)
         LocalBroadcastManager.getInstance(this).registerReceiver(
             (reciever),
             IntentFilter(RECEVER_LOCAL_BROADCAS)

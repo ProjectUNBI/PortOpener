@@ -13,6 +13,7 @@ class UserInstance private constructor() {
     }
 
     var portPairs=ArrayList<PortPair>()
+    var noProxySock=3127
 
     fun saveTosharePref(context: Context) {
         val savable = Gson().toJson(instance)
