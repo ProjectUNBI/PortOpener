@@ -40,7 +40,7 @@ class OngoingNotificationBuilder {
                 val notificationbuilder =
                     NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                         .setOngoing(true)
-                        .setSmallIcon(iconId)
+//                        .setSmallIcon(iconId)
                         .setContentTitle(title)
                         .setContentText(body)
                         .setPriority(NotificationManager.IMPORTANCE_MIN)
@@ -59,7 +59,7 @@ class OngoingNotificationBuilder {
             val notificationbuilder = Notification.Builder(context)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setSmallIcon(iconId)
+//                .setSmallIcon(iconId)
             if (isAutoCancel) {
                 notificationbuilder.setAutoCancel(true)
                 notificationbuilder.setContentIntent(clickIntent)
