@@ -358,8 +358,11 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="@string/close_now" />
-
-
+        <Switch
+            android:id="@+id/automate_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Auto open with intent" />
 
     </LinearLayout>
 </ScrollView>

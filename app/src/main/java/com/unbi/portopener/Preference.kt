@@ -12,6 +12,7 @@ class UserInstance private constructor() {
         val DEFAULT_THREAD = 8
     }
 
+    var auto_connect: Boolean=false
     var portPairs=ArrayList<PortPair>()
     var noProxySock=3127
 
@@ -37,6 +38,7 @@ class Appinstance{
     companion object {
         var instance = Appinstance()
     }
+
     var portOpenerAssync1=AssyncPortOpenner()
     var portOpenerAssync2=AssyncPortOpenner()
     var isConnected=false;

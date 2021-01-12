@@ -9,20 +9,20 @@ import android.os.IBinder
 import android.support.v7.widget.CardView
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
 import android.support.v4.content.LocalBroadcastManager
 import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Intent.CATEGORY_DEFAULT
 import android.opengl.Visibility
 import android.view.View.GONE
-import android.widget.TextView
+import android.widget.*
+import android.widget.Toast.LENGTH_LONG
+import android.widget.Toast.LENGTH_SHORT
 import com.unbi.portopener.extracode.SendBroadcast
 
 
-class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListener {
+class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListener,
+    CompoundButton.OnCheckedChangeListener {
 
 
     private var mBound: Boolean = false//true whwn service is bounded
@@ -30,6 +30,8 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
 
     lateinit var but_start: Button
     lateinit var but_stop: Button
+
+    lateinit var automate_switch: Switch
 
 
     lateinit var but_test_local1: Button
@@ -47,17 +49,48 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
     lateinit var tvsockport: TextView
     lateinit var tvhttpport: TextView
 
-    lateinit var edit_noproxy_sockport:EditText
-    lateinit var but_noproxy_sockport_test:Button
+    lateinit var edit_noproxy_sockport: EditText
+    lateinit var but_noproxy_sockport_test: Button
 
     val reciever = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val actionId = intent?.action;
             when (actionId) {
                 PORTVALUE_INTENT -> {
-                    val sock = intent.getIntExtra("extrasock",-1)
-                    val http = intent.getIntExtra("extrahttp",-1)
-                    Appinstance.instance.portvalue = PortValue(sock,http,false)
+                    val sock = intent.getIntExtra("extrasock", -1)
+                    val http = intent.getIntExtra("extrahttp", -1)
+                    Appinstance.instance.portvalue = PortValue(sock, http, false)
+                    //Connect automatically if the user want to do so
+                    UserInstance.instance.readfromSharePref(context)//You have to read from the share preference
+                    if (UserInstance.instance.auto_connect) {
+                        if (1 > UserInstance.instance.portPairs[0].openport ||
+                            1 > UserInstance.instance.portPairs[1].openport
+                        ) {
+                            Toast.makeText(
+                                context,
+                                "Please set the ports which you want to open!!!",
+                                LENGTH_SHORT
+                            ).show()
+                            return
+                        }
+                        //////////////Here you have to open the port///////////
+                        Toast.makeText(
+                            context,
+                            "Port opening:\nSocks: ${sock} ===> ${UserInstance.instance.portPairs[0].openport}\nHttps: ${http} ===> ${UserInstance.instance.portPairs[1].openport}",
+                            LENGTH_LONG
+                        ).show()
+                        //save the user data
+                        UserInstance.instance.portPairs[0].localhost=sock
+                        UserInstance.instance.portPairs[1].localhost=http
+                        UserInstance.instance.saveTosharePref(context)
+                        //Firsst close the port if open
+                        mService?.StopService()
+                        Appinstance.instance.isConnected = false
+                        //open the port
+                        mService?.StartService()
+                        Appinstance.instance.isConnected = true
+
+                    }
                 }
             }
             updatecardiewProxy()
@@ -75,9 +108,12 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
             UserInstance.instance.saveTosharePref(this)
         }
 
-        but_noproxy_sockport_test=findViewById(R.id.but_noproxy_sock_port)
+        automate_switch = findViewById(R.id.automate_switch)
+        automate_switch.setOnCheckedChangeListener(this)
+
+        but_noproxy_sockport_test = findViewById(R.id.but_noproxy_sock_port)
         but_noproxy_sockport_test.setOnClickListener(this)
-        edit_noproxy_sockport=findViewById(R.id.edit_noproxy_sock_port)
+        edit_noproxy_sockport = findViewById(R.id.edit_noproxy_sock_port)
         but_start = findViewById(R.id.but_open_now)
         but_start.setOnClickListener(this)
         but_stop = findViewById(R.id.but_close_now)
@@ -170,7 +206,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
                             .show()
                         return
                     }
-                    if(!validport(UserInstance.instance.noProxySock)){
+                    if (!validport(UserInstance.instance.noProxySock)) {
                         Toast.makeText(this, "No proxy sock port is not valid", Toast.LENGTH_SHORT)
                             .show()
                         return
@@ -211,11 +247,11 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
                         Appinstance.instance.portvalue.sockPort
                     UserInstance.instance.portPairs[1].localhost =
                         Appinstance.instance.portvalue.httpPortint
-                    card_porxy_port.visibility=GONE
-                    Appinstance.instance.portvalue.isconsume=true
+                    card_porxy_port.visibility = GONE
+                    Appinstance.instance.portvalue.isconsume = true
                     refreshview()
                 }
-                R.id.but_noproxy_sock_port->{
+                R.id.but_noproxy_sock_port -> {
                     saveeditvalues()
                     test(UserInstance.instance.noProxySock)
 
@@ -233,8 +269,9 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         return portPair.localhost > -1 && portPair.localhost < 65535 &&
                 portPair.openport > -1 && portPair.openport < 65535
     }
+
     private fun validport(port: Int): Boolean {
-        return port> -1 && port < 65535
+        return port > -1 && port < 65535
     }
 
     private fun test(port: Int) {
@@ -284,10 +321,12 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         } else {
             card_porxy_port.visibility = View.GONE
         }
+
     }
 
     private fun refreshview() {
-        if (Appinstance.instance.isConnected) {
+//        if (Appinstance.instance.isConnected) {
+        if (Appinstance.instance.service_status) {
             but_start.isEnabled = false
             but_stop.isEnabled = true
         } else {
@@ -309,15 +348,17 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         if (UserInstance.instance.portPairs[1].openport > -1) {
             edit_open2.setText(UserInstance.instance.portPairs[1].openport.toString())
         }
+        ///Update the switch
+        automate_switch.isChecked = UserInstance.instance.auto_connect
 
     }
 
 
     override fun onStart() {
         super.onStart()
-        val intentFilter=IntentFilter("com.unbi.poropener.PORT")
+        val intentFilter = IntentFilter("com.unbi.poropener.PORT")
         intentFilter.addCategory(CATEGORY_DEFAULT)
-        registerReceiver(reciever,intentFilter)
+        registerReceiver(reciever, intentFilter)
         LocalBroadcastManager.getInstance(this).registerReceiver(
             (reciever),
             IntentFilter(RECEVER_LOCAL_BROADCAS)
@@ -333,6 +374,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         super.onResume()
         ToastHandler.instance.setmContext(this)
         updatecardiewProxy()
+        refreshview()
     }
 
     override fun onPause() {
@@ -351,5 +393,10 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
         ToastHandler.instance.release()
     }
 
+    override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+        UserInstance.instance.auto_connect = isChecked
+        UserInstance.instance.saveTosharePref(this)
+    }
 
 }
+
