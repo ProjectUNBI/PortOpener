@@ -325,8 +325,7 @@ class MainActivity : ServiceConnection, AppCompatActivity(), View.OnClickListene
     }
 
     private fun refreshview() {
-//        if (Appinstance.instance.isConnected) {
-        if (Appinstance.instance.service_status) {
+        if (Appinstance.instance.isConnected) {
             but_start.isEnabled = false
             but_stop.isEnabled = true
         } else {
